@@ -12,10 +12,14 @@ library(dplyr)
 # tutorial at http://www.kevjohnson.org/making-maps-in-r/
 
 # download shapefile for census tract in georgia in 2010
+# go to the generalized "GENZ" folder for cartographic boundary files via the FTP 
 # http://www2.census.gov/geo/tiger/
+# or download via browser https://www.census.gov/geo/maps-data/data/tiger-cart-boundary.html
 
 # other tiger products 
 # https://www.census.gov/geo/maps-data/data/tiger.html
+
+# note that census describes generalized cartographic boundary files as better for small areas, since they render faster than ungeneralized TIGER shapefiles
 
 tract <- readOGR(dsn = ".", layer = "gz_2010_13_140_00_500k")
 tract <- fortify(tract, region="GEO_ID")
