@@ -60,6 +60,16 @@ p <- ggplot() + geom_polygon(data = df1, aes(x = long, y = lat, group = group,
                 axis.ticks.x = element_blank(), axis.text.x = element_blank(), plot.title=element_text(size=20,face="bold")) + 
                 labs(x = "", y = "", title = "Percent Without Health Insurance") + coord_fixed() + coord_map(project = "conic", lat0 = 30)
 
+# without tract boundary lines 
+p <- ggplot() + geom_polygon(data = df1, aes(x = long, y = lat, group = group,
+                                             fill = rate)) + theme_bw() + 
+        scale_fill_distiller(palette = "Blues", labels = percent, breaks = pretty_breaks(n = 10), values = c(1,0)) +
+        theme(plot.background = element_blank(), panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), panel.border = element_blank(), axis.ticks.y = element_blank(), axis.text.y = element_blank(), 
+              axis.ticks.x = element_blank(), axis.text.x = element_blank(), plot.title=element_text(size=20,face="bold")) + 
+        labs(x = "", y = "", title = "Percent Without Health Insurance") + coord_fixed() + coord_map(project = "conic", lat0 = 30)
+
+
 ggsave(p, file = "map1.png", width = 6, height = 4.5, type = "cairo-png")
 
 
