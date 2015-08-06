@@ -3,11 +3,12 @@ library(rgdal)
 library(scales)
 library(ggmap)
 library(dplyr)
-library(Cairo)
 library(RCurl)
 library(stringr)
-library(plyr)
-library(dplyr)
+library(datasets)
+library(maps)
+
+
 
 # tutorial at http://www.kevjohnson.org/making-maps-in-r/
 
@@ -73,4 +74,94 @@ p <- ggplot() + geom_polygon(data = df1, aes(x = long, y = lat, group = group,
 ggsave(p, file = "map1.png", width = 6, height = 4.5, type = "cairo-png")
 
 
+
+
+
+# test of reading in census city shapefiles
+# http://www.census.gov/geo/maps-data/data/cbf/cbf_concity.html
+# download shapefile, and copy all files from zipped folder into a working directory
+
+# see census GEOID file for All Places, including Consolidated Cities FIPS
+# http://www.census.gov/geo/maps-data/data/relationship.html
+# variable PLACEFP10 is the CONCIT FIPS code used as the id in the city shapefiles
+
+# general info on consolidated cities
+# http://www.census.gov/geo/reference/webatlas/concities.html
+
+# data seems to only have milford city???
+
+cities <- readOGR(dsn = ".", layer = "cb_2014_09_concity_500k")
+# call structure on cities to find out how to refer to GEOID id variable (eg. "GEO_ID" or "GEOID")
+str(cities)
+cities <- fortify(cities, region="GEOID")
+
+# plot map
+p <- ggplot() + geom_polygon(data = cities, aes(x = long, y = lat, group = group), color = "black", size = 0.25, fill = "red") + coord_map() 
+
+
+
+
+
+# example with noaa cities shapefiles
+# http://www.nws.noaa.gov/geodata/catalog/national/html/cities.htm
+# doesn't work, gpplot can't read spatial data file??
+cities <- readOGR(dsn = ".", layer = "ci08au12")
+# call structure on cities to find out how to refer to GEOID id variable (eg. "GEO_ID" or "GEOID")
+str(cities)
+cities <- fortify(cities, region="ID")
+
+
+
+
+# example with tiger/line cities shapefiles
+# http://www.census.gov/geo/maps-data/data/tiger-line.html
+# only shows milford again, and only has same six state options
+cities <- readOGR(dsn = ".", layer = "tl_2014_09_concity")
+# call structure on cities to find out how to refer to GEOID id variable (eg. "GEO_ID" or "GEOID")
+str(cities)
+cities <- fortify(cities, region="GEOID")
+
+
+
+
+# try with 2012 place file
+# ftp://ftp2.census.gov/geo/tiger/TIGER2012/PLACE/
+
+# this works!
+
+cities <- readOGR(dsn = ".", layer = "tl_2012_01_place")
+# call structure on cities to find out how to refer to GEOID id variable (eg. "GEO_ID" or "GEOID")
+str(cities)
+cities <- fortify(cities, region="GEOID")
+
+state_map <- map_data("state")
+al_map <- filter(state_map, region == "alabama")
+
+p <- ggplot() + geom_polygon(data = cities, aes(x = long, y = lat, group = group), color = "black", size = 0.25, fill = "red") + coord_map() +
+        geom_polygon(data = al_map, aes(x = long, y = lat, group = group) colour = "black", fill = NA)
+
+
+# iterative changes to working ggplot script in choropleth.examples
+ggplot(data = choropleth_input, aes(x = long, y = lat, group = group)) + geom_polygon(data = state_map_input, colour = "black", fill = NA) + 
+        scale_fill_manual(values = pal(length(unique(choropleth_input$rate_d2)))) + theme_bw() + 
+        theme(plot.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+        axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.ticks.x = element_blank(), axis.text.x = element_blank(), 
+        plot.title = element_text(size=20, face = "bold")) + labs(x = "", y = "", title = "Unemployment rate in Alabama", fill = "Unemployment rate") + 
+        coord_fixed() + coord_map(project = "conic", lat0 = 30)
+
+
+ggplot(data = choropleth_input, aes(x = long, y = lat, group = group)) + geom_polygon(data = state_map_input, colour = "black", fill = NA) + theme_bw() + 
+        theme(plot.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.ticks.x = element_blank(), axis.text.x = element_blank(), 
+              plot.title = element_text(size=20, face = "bold")) + labs(x = "", y = "", title = "Unemployment rate in Alabama", fill = "Unemployment rate") + 
+        coord_fixed() + coord_map(project = "conic", lat0 = 30)
+
+# this works!
+ggplot(data = al_map, aes(x = long, y = lat, group = group)) + 
+        geom_polygon(data = cities, aes(x = long, y = lat, group = group), color = "black", size = 0.25, fill = "red") + 
+        geom_polygon(data = al_map, colour = "black", fill = NA) +theme_bw() + 
+        theme(plot.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.ticks.x = element_blank(), axis.text.x = element_blank(), 
+              plot.title = element_text(size=20, face = "bold")) + labs(x = "", y = "", title = "Consolidated Cities in Alabama", fill = "Unemployment rate") + 
+        coord_fixed() + coord_map(project = "conic", lat0 = 30)
 
