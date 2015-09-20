@@ -8,7 +8,7 @@ library(stringr)
 library(datasets)
 library(maps)
 
-
+# http://www.r-bloggers.com/things-i-forget-reading-a-shapefile-in-r-with-readogr/
 
 # tutorial at http://www.kevjohnson.org/making-maps-in-r/
 
@@ -22,7 +22,13 @@ library(maps)
 
 # note that census describes generalized cartographic boundary files as better for small areas, since they render faster than ungeneralized TIGER shapefiles
 
+# might need gpclibPermit() to use fortify if you get error
+# http://stackoverflow.com/questions/30790036/error-istruegpclibpermitstatus-is-not-true
+
+
 tract <- readOGR(dsn = ".", layer = "gz_2010_13_140_00_500k")
+# use names(tract) to see options for the region argument
+names(tract)
 tract <- fortify(tract, region="GEO_ID")
 
 # download data
